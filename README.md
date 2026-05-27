@@ -62,3 +62,16 @@ ce-lab-system-diagnosis-rca/
 └── screenshots/
     └── ...                           ← Dashboard and metric screenshots
 ```
+
+# Reflection Questions #
+
+1. RED first, then USE?
+RED tells you what's broken from the user's perspective — slow, erroring, high traffic. Once you know the symptom, USE helps you find which resource caused it. You start with "users are suffering" then ask "what infrastructure explains that?"
+2. How did correlation nail the root cause?
+CPU and memory were totally flat while latency exploded — that eliminated the obvious suspects. The only thing that spiked at the exact same moment as latency was the connection pool hitting 100%. Traffic surge → pool exhausted → latency spikes. Three signals, one timeline, one cause.
+3. Immediate vs long-term fix?
+Immediate is a band-aid — bump the pool from 20 to 50, stop the bleeding, get users back online. Long-term actually fixes the underlying fragility — dynamic scaling, RDS Proxy, load testing — so the same thing can't happen again at 5x traffic.
+4. Why write an RCA after it's already fixed?
+Because "fixed" just means it stopped hurting. Without an RCA you don't know why it broke, so you'll hit the same wall again. It also turns one team's painful experience into documented knowledge the whole org can learn from.
+5. How do you pick P0/P1/P2?
+Roughly: P0 = completely down, everyone affected, revenue bleeding fast. P1 = degraded but limping, significant users impacted. P2 = some users affected, workaround exists. This incident was P1 — service was slow and erroring but not dead, and only ~5k users hit it during a 1-hour window.
